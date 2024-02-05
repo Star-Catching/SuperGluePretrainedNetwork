@@ -247,11 +247,15 @@ class SuperGlue(nn.Module):
 
     def forward(self, data):
         """Run SuperGlue on a pair of keypoints and descriptors"""
+        # 从输入数据中提取关键点0和关键点1的描述子
         desc0, desc1 = data['descriptors0'], data['descriptors1']
+        # 从输入数据中提取关键点0和关键点1
         kpts0, kpts1 = data['keypoints0'], data['keypoints1']
-
+        # 如果任何一个关键点集的关键点数量为0，则返回默认值
         if kpts0.shape[1] == 0 or kpts1.shape[1] == 0:  # no keypoints
+            # 获取关键点描述子张量的形状，不包括特征维度
             shape0, shape1 = kpts0.shape[:-1], kpts1.shape[:-1]
+            # 返回默认的匹配结果和匹配分数
             return {
                 'matches0': kpts0.new_full(shape0, -1, dtype=torch.int),
                 'matches1': kpts1.new_full(shape1, -1, dtype=torch.int),
@@ -260,41 +264,55 @@ class SuperGlue(nn.Module):
             }
 
         # Keypoint normalization.
+        # 对关键点进行归一化处理，使其适应特征提取网络的输入尺寸
         kpts0 = normalize_keypoints(kpts0, data['image0'].shape)
         kpts1 = normalize_keypoints(kpts1, data['image1'].shape)
 
         # Keypoint MLP encoder.
+        # 使用关键点MLP编码器对关键点进行编码，得到描述子
         desc0 = desc0 + self.kenc(kpts0, data['scores0'])
         desc1 = desc1 + self.kenc(kpts1, data['scores1'])
 
         # Multi-layer Transformer network.
+        # 使用多层Transformer网络进行特征匹配
         desc0, desc1 = self.gnn(desc0, desc1)
 
         # Final MLP projection.
+        # 使用最终的MLP投影层对描述子进行投影
         mdesc0, mdesc1 = self.final_proj(desc0), self.final_proj(desc1)
 
         # Compute matching descriptor distance.
+        # 计算匹配描述子之间的距离，得到匹配分数
         scores = torch.einsum('bdn,bdm->bnm', mdesc0, mdesc1)
         scores = scores / self.config['descriptor_dim']**.5
 
         # Run the optimal transport.
+        # 使用对数优化传输算法计算匹配分数的对数正则化
         scores = log_optimal_transport(
             scores, self.bin_score,
             iters=self.config['sinkhorn_iterations'])
 
         # Get the matches with score above "match_threshold".
+        # 计算每行（图像0中的每个描述子）和每列（图像1中的每个描述子）中的最大值
         max0, max1 = scores[:, :-1, :-1].max(2), scores[:, :-1, :-1].max(1)
+        # 获取最大值对应的索引
         indices0, indices1 = max0.indices, max1.indices
+        # 计算相互匹配的描述子索引
         mutual0 = arange_like(indices0, 1)[None] == indices1.gather(1, indices0)
         mutual1 = arange_like(indices1, 1)[None] == indices0.gather(1, indices1)
+        # 创建全零张量
         zero = scores.new_tensor(0)
+        # 根据相互匹配的索引计算匹配分数
         mscores0 = torch.where(mutual0, max0.values.exp(), zero)
         mscores1 = torch.where(mutual1, mscores0.gather(1, indices1), zero)
+        # 根据匹配分数和匹配阈值确定有效的匹配对
         valid0 = mutual0 & (mscores0 > self.config['match_threshold'])
         valid1 = mutual1 & valid0.gather(1, indices1)
+        # 将无效的匹配对的索引置为-1
         indices0 = torch.where(valid0, indices0, indices0.new_tensor(-1))
         indices1 = torch.where(valid1, indices1, indices1.new_tensor(-1))
-
+        # 返回匹配结果的字典，包括了匹配的描述子索引matches0和matches1，以及对应的匹配分数matching_scores0
+        # 和matching_scores1。在matches0和matches1中，使用 - 1表示无效的匹配。
         return {
             'matches0': indices0, # use -1 for invalid match
             'matches1': indices1, # use -1 for invalid match

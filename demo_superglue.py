@@ -172,6 +172,9 @@ if __name__ == '__main__':
         }
     }
     # 创建匹配模型实例，并将其设置为评估模式，然后移动到指定设备
+    # * Matching(config)：创建了一个名为Matching的类的实例，其中传入了参数config。这个类可能是一个包含图像匹配功能的模型类。
+    # * .eval()：将创建的模型实例设置为评估模式。在评估模式下，模型会禁用一些具有随机性质的操作，如Dropout。这是因为在评估模式下，我们不需要模型进行随机的行为，而是希望其输出稳定且可重复。
+    # * .to(device)：将模型移动到指定的设备上，其中device是一个表示硬件设备的对象，比如GPU或CPU。这个步骤是为了利用硬件加速，提高模型的运行速度
     matching = Matching(config).eval().to(device)
     keys = ['keypoints', 'scores', 'descriptors'] # 定义包含 SuperPoint 模型输出关键信息的列表
 
