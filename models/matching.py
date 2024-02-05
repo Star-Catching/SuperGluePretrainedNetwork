@@ -85,7 +85,7 @@ class Matching(torch.nn.Module):
                 data[k] = torch.stack(data[k])
 
         # Perform the matching
-        # 执行匹配过程
+        # 执行匹配过程1
         pred = {**pred, **self.superglue(data)}
 
         return pred
