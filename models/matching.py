@@ -60,7 +60,7 @@ class Matching(torch.nn.Module):
         Args:
           data: dictionary with minimal keys: ['image0', 'image1']
         """
-        pred = {}
+        pred = {}    #123
 
         # Extract SuperPoint (keypoints, scores, descriptors) if not provided
         # 如果输入中不存在 'keypoints0'，则提取 SuperPoint 的输出
