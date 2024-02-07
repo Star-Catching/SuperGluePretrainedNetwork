@@ -212,8 +212,8 @@ class SuperPoint(nn.Module):
         # 提取描述子
         descriptors = [sample_descriptors(k[None], d[None], 8)[0]
                        for k, d in zip(keypoints, descriptors)]        
-        print(descriptors[0].shape)   # ! torch.Size([256, 662])
-        print(descriptors)
+        # print(descriptors[0].shape)   # ! torch.Size([256, 662])
+        # print(descriptors)
         return {
             'keypoints': keypoints,
             'scores': scores,
