@@ -193,7 +193,7 @@ if __name__ == '__main__':
     # 然后，将得到的关键点信息存储在 last_data 中，将帧张量、图像和帧编号等信息保存在对应的变量中。
     frame_tensor = frame2tensor(frame, device)   # 将获取的图像帧转换为张量
     last_data = matching.superpoint({'image': frame_tensor})   # 使用 SuperPoint 模型进行关键点检测
-    print(last_data)
+    # print(last_data)
     last_data = {k+'0': last_data[k] for k in keys}   # 选择关键信息存储在 last_data 中，包括关键点、分数和描述符
     last_data['image0'] = frame_tensor  # 将图像张量和相关信息存储在 last_data 中
     last_frame = frame  # 存储最后一帧的图像

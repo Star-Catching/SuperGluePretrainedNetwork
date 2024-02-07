@@ -76,9 +76,12 @@ class Matching(torch.nn.Module):
         # We should either have i) one image per batch, or
         # ii) the same number of local features for all images in the batch.
         # 将所有特征堆叠起来
-        # 我们应该有两种情况，要么 i）每个批次一个图像，要么
+        # 我们应该有两种情况，要么
+        # i）每个批次一个图像，要么
         # ii）批次中所有图像具有相同数量的局部特征。
-        data = {**data, **pred}
+        data = {**data, **pred}# 这一步之前data中有keypoint0  score0 descriptors0 image0 image1 这一步之后data有keypoint0  score0 descriptors0 mage0 image1 keypoint1 score1 descriptors1
+        # print(data)
+        # de0 = data['descriptors0']
 
         for k in data:
             if isinstance(data[k], (list, tuple)):

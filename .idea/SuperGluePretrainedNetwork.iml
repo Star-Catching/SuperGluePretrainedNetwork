@@ -7,7 +7,7 @@
   </component>
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$" />
-    <orderEntry type="jdk" jdkName="superpoint" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="superpoint (2)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="superpoint interpreter library" level="application" />
   </component>
